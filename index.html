@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lauramei.org | Official Community Server</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            background: linear-gradient(135deg, #2d1a2c 0%, #4a2538 100%);
+            color: #ffffff; 
+            font-family: 'Quicksand', sans-serif;
+        }
+        .minecraft-btn { 
+            transition: all 0.2s ease-in-out; 
+            box-shadow: 0 4px 0 0 #a35b7e;
+        }
+        .minecraft-btn:hover { 
+            transform: translateY(2px); 
+            box-shadow: 0 2px 0 0 #a35b7e;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+        .toast {
+            animation: fadeOut 2.5s forwards;
+        }
+        /* Minecraft Block Explosion Particles */
+        .explosion-particle {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            pointer-events: none;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen relative" onclick="createExplosion(event)">
+
+    <div id="copyToast" class="fixed top-5 right-5 bg-pink-300 text-rose-950 px-6 py-3 rounded-full font-bold shadow-lg hidden z-50">
+        <i class="fa-solid fa-cat mr-2"></i> IP Copied!
+    </div>
+
+    <header class="flex-grow flex flex-col items-center justify-center px-6 py-20 text-center relative">
+        <div class="flex items-center justify-center gap-5 mb-8 opacity-90">
+            <i class="fa-solid fa-paw text-3xl text-pink-300/70"></i>
+            <i class="fa-solid fa-cat text-6xl text-pink-200"></i>
+            <i class="fa-solid fa-paw text-3xl text-pink-300/70"></i>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-bold leading-tight pb-2 mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-100 via-rose-200 to-pink-100 relative">
+    lauramei.org
+    <canvas id="diamondRain" class="absolute top-full left-0 w-full pointer-events-none" style="height: 150px;"></canvas>
+</h1>
+        <p class="text-2xl md:text-3xl text-pink-100 font-bold max-w-2xl mb-12">
+            Welcome to My Server! <i class="fa-solid fa-paw text-xs ml-1"></i>
+        </p>
+
+        <div id="status-badge" class="inline-flex items-center gap-3 bg-rose-950/60 px-5 py-2.5 rounded-full border border-pink-200/30 text-pink-100 text-sm mb-12 shadow-lg transition-all duration-500 opacity-0 transform translate-y-2">
+            <div class="relative flex h-3 w-3">
+                <span id="status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
+                <span id="status-dot" class="relative inline-flex rounded-full h-3 w-3 bg-slate-500"></span>
+            </div>
+            <span id="status-text" class="font-medium tracking-wide">Pinging server...</span>
+        </div>
+
+        <div id="player-list" class="flex flex-wrap justify-center gap-2 max-w-xl mx-auto mb-8 min-h-[24px]">
+            <!-- Player names will appear here -->
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl relative z-10">
+            <div class="bg-rose-950/40 p-8 rounded-2xl border-2 border-pink-200/30 backdrop-blur-sm flex flex-col h-full hover:border-pink-200/60 transition-colors shadow-lg">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <i class="fa-solid fa-mug-hot text-3xl text-pink-200"></i>
+                    <h2 class="text-2xl font-bold">Java Edition</h2>
+                </div>
+                <p class="text-pink-100/70 mb-6 text-sm">Versions 1.21.x</p>
+                <div onclick="copyIP('java.lauramei.org')" class="cursor-pointer bg-rose-950/80 p-4 rounded-xl font-mono text-pink-100 border border-pink-200/20 hover:bg-rose-900 transition-colors flex justify-between items-center group mt-auto" title="Click to copy IP">
+                    <span class="text-sm">java.lauramei.org</span>
+                    <i class="fa-regular fa-copy text-pink-300/50 group-hover:text-pink-100 transition-colors"></i>
+                </div>
+            </div>
+
+            <div class="bg-rose-950/40 p-8 rounded-2xl border-2 border-pink-200/30 backdrop-blur-sm flex flex-col h-full hover:border-pink-200/60 transition-colors shadow-lg">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <i class="fa-solid fa-mobile-screen text-3xl text-pink-200"></i>
+                    <h2 class="text-2xl font-bold">Bedrock Edition</h2>
+                </div>
+                <p class="text-pink-100/70 mb-6 text-sm">Win10, Console, Mobile</p>
+                <div onclick="copyIP('br.lauramei.org')" class="cursor-pointer bg-rose-950/80 p-4 rounded-xl font-mono text-pink-100 border border-pink-200/20 hover:bg-rose-900 transition-colors flex justify-between items-center group mb-3 mt-auto" title="Click to copy IP">
+                    <span class="text-sm">br.lauramei.org</span>
+                    <i class="fa-regular fa-copy text-pink-300/50 group-hover:text-pink-100 transition-colors"></i>
+                </div>
+                <div class="bg-rose-950/60 py-2 px-3 rounded-lg border border-pink-200/20 flex justify-between items-center">
+                    <span class="text-sm text-pink-100/60">Port:</span>
+                    <span class="font-mono text-pink-200 font-bold">1099</span>
+                </div>
+            </div>
+        </div>
+
+<div class="mt-16 flex flex-wrap justify-center gap-6 relative z-10">
+            <a href="http://bluemap.lauramei.org" class="minecraft-btn bg-pink-600 hover:bg-pink-500 text-white px-10 py-4 rounded-full font-bold flex items-center text-lg">
+                <i class="fa-solid fa-map-location-dot mr-3"></i> View Live Map
+            </a>
+            <a href="https://twitch.tv/lauram31_" class="minecraft-btn bg-purple-400 hover:bg-purple-300 text-white px-8 py-4 rounded-full font-bold flex items-center text-lg relative">
+                <div class="flex h-3 w-3 mr-3 relative">
+                    <span id="twitch-pulse" class="hidden animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span id="twitch-dot" class="relative inline-flex rounded-full h-3 w-3 bg-rose-500 border border-white/20"></span>
+                </div>
+                <i class="fa-brands fa-twitch mr-2"></i> Watch Stream
+            </a>
+        </div>
+
+        <div class="mt-6 relative z-10">
+            <a href="https://drive.google.com/drive/folders/1aHI4-QTr6CnItlJRcXLj8kXW5jE-fAkP?usp=drive_link" target="_blank" class="minecraft-btn bg-blue-500 hover:bg-blue-400 text-white px-8 py-4 rounded-full font-bold flex items-center text-lg">
+                <i class="fa-brands fa-google-drive mr-3"></i> Client Mods
+            </a>
+        </div>
+    </header>
+
+    <div class="flex flex-col items-center mb-20 px-6 animate-fade-in">
+        <div class="w-full max-w-[350px] h-[400px] relative group">
+            
+            <a href="https://discord.gg/9DjpH68ube" 
+               target="_blank" 
+               class="absolute top-0 left-0 w-full h-[70px] z-20 cursor-pointer" 
+               title="Join our Discord"></a>
+
+            <iframe 
+                src="https://discord.com/widget?id=1377590328248369266&theme=dark" 
+                width="100%" 
+                height="400" 
+                allowtransparency="true" 
+                frameborder="0" 
+                sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+                class="rounded-2xl border border-white/10 shadow-2xl bg-[#232428]/50 relative z-10">
+            </iframe>
+        </div>
+    </div>
+
+   <footer class="py-10 border-t border-pink-200/10 text-center text-pink-100/50 text-sm relative z-10">
+        <p>&copy; 2026 Laura Mei | <i class="fa-solid fa-paw"></i></p>
+    </footer>
+
+    <script>
+    // Existing Copy IP function
+    function copyIP(ip) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(ip).then(showToast);
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = ip;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast();
+            } catch (err) {
+                console.error('Fallback copy failed', err);
+            }
+            document.body.removeChild(textArea);
+        }
+    }
+
+    function showToast() {
+        const toast = document.getElementById('copyToast');
+        toast.classList.remove('hidden', 'toast');
+        void toast.offsetWidth; 
+        toast.classList.add('toast');
+        setTimeout(() => {
+            toast.classList.add('hidden');
+            toast.classList.remove('toast');
+        }, 2500);
+    }
+
+    // Existing Minecraft Status function (with your specific playit address)
+    async function fetchServerStatus() {
+        const badge = document.getElementById('status-badge');
+        const text = document.getElementById('status-text');
+        const dot = document.getElementById('status-dot');
+        const ping = document.getElementById('status-ping');
+        const playerList = document.getElementById('player-list');
+
+        try {
+            const response = await fetch('https://api.mcsrvstat.us/3/analysis-showing.gl.joinmc.link?t=' + new Date().getTime());
+            const data = await response.json();
+
+            if (badge) badge.classList.remove('opacity-0', 'translate-y-2');
+
+            if (data.online) {
+                dot.classList.replace('bg-slate-500', 'bg-emerald-400');
+                if (ping) {
+                    ping.classList.remove('hidden');
+                    ping.classList.replace('bg-slate-400', 'bg-emerald-400');
+                }
+                const pOnline = data.players.online;
+                const pMax = data.players.max;
+                text.innerHTML = 'Server Online <span class="mx-2 opacity-30">|</span> <span class="font-bold text-white">' + pOnline + '</span> <span class="text-pink-100/70">/ ' + pMax + ' Players</span>';
+                
+                // Display player names
+                if (playerList && data.players.list && data.players.list.length > 0) {
+                    const names = data.players.list.map(function(player) {
+                        return '<span class="bg-rose-950/60 px-3 py-1 rounded-full text-xs text-pink-100 border border-pink-200/20">' + player.name + '</span>';
+                    });
+                    playerList.innerHTML = names.join('');
+                } else if (playerList) {
+                    playerList.innerHTML = '';
+                }
+            } else {
+                dot.classList.replace('bg-slate-500', 'bg-red-400');
+                if (ping) ping.classList.add('hidden');
+                text.innerText = "Server Currently Offline";
+                if (playerList) playerList.innerHTML = '';
+            }
+        } catch (error) {
+            console.error("Status fetch failed", error);
+        }
+    }
+
+    // NEW: Twitch Live Status function
+    async function checkTwitchStatus() {
+    const dot = document.getElementById('twitch-dot');
+    const pulse = document.getElementById('twitch-pulse');
+    
+    if (!dot || !pulse) return;
+
+    try {
+        const response = await fetch('https://decapi.me/twitch/uptime/lauram31_');
+        const data = await response.text();
+
+        if (data && !data.toLowerCase().includes("offline")) {
+            // --- LIVE STATE ---
+            dot.classList.remove('bg-rose-500'); // Remove Red
+            dot.classList.add('bg-emerald-400');    // Add Green
+            pulse.classList.remove('hidden');    // START THE PULSE
+        } else {
+            // --- OFFLINE STATE ---
+            dot.classList.remove('bg-emerald-400'); // Remove Green
+            dot.classList.add('bg-rose-500');    // Add Red
+            pulse.classList.add('hidden');       // STOP THE PULSE
+        }
+    } catch (error) {
+        console.error("Twitch check failed", error);
+    }
+}
+
+    // Initial Load: Run both functions when page opens
+    window.addEventListener('load', () => {
+        fetchServerStatus();
+        checkTwitchStatus();
+    });
+
+    // Refresh Loop: Update both every 30 seconds
+    setInterval(() => {
+        fetchServerStatus();
+        checkTwitchStatus();
+    }, 60000);
+
+    // Minecraft Block Explosion Effect
+    function createExplosion(event) {
+        // Minecraft block colors (dirt, stone, wood, etc.)
+        const blockColors = [
+            '#8B4513', // Dirt brown
+            '#808080', // Stone gray
+            '#A0522D', // Wood brown
+            '#4A7C3F', // Grass green
+            '#7C7C7C', // Cobblestone
+            '#B5651D', // Oak wood
+            '#5D4E37', // Dirt
+        ];
+
+        const x = event.clientX;
+        const y = event.clientY;
+        const particleCount = 12;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('explosion-particle');
+            
+            // Random direction and distance
+            const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5);
+            const distance = 30 + Math.random() * 50;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            
+            // Random block color
+            const color = blockColors[Math.floor(Math.random() * blockColors.length)];
+            
+            particle.style.left = (x - 4) + 'px';
+            particle.style.top = (y - 4) + 'px';
+            particle.style.backgroundColor = color;
+            
+            document.body.appendChild(particle);
+            
+            // Animate using setInterval for broader compatibility
+            const startTime = Date.now();
+            const duration = 600;
+            
+            const animate = function() {
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / duration;
+                
+                if (progress < 1) {
+                    const currentX = tx * progress;
+                    const currentY = ty * progress;
+                    const scale = 1 - (0.7 * progress);
+                    const opacity = 1 - progress;
+                    
+                    particle.style.transform = 'translate(' + currentX + 'px, ' + currentY + 'px) scale(' + scale + ')';
+                    particle.style.opacity = opacity;
+                    
+                    requestAnimationFrame(animate);
+                } else {
+                    particle.remove();
+                }
+            };
+            
+            requestAnimationFrame(animate);
+        }
+    }
+
+    // Minecraft Diamond Rain Effect
+    (function() {
+        var canvas = document.getElementById('diamondRain');
+        if (!canvas) return;
+        
+        var ctx = canvas.getContext('2d');
+        var width = canvas.offsetWidth || 300;
+        var height = 150;
+        canvas.width = width;
+        canvas.height = height;
+        
+        var diamonds = [];
+        var diamondColors = ['#3AE6FA', '#2BC4D4', '#5DF1FF', '#1DB9CC'];
+        
+        function createDiamond() {
+            return {
+                x: Math.random() * width,
+                y: -10,
+                size: 3 + Math.random() * 4,
+                speed: 1 + Math.random() * 2,
+                color: diamondColors[Math.floor(Math.random() * diamondColors.length)],
+                rotation: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 0.1
+            };
+        }
+        
+        function drawDiamond(d) {
+            ctx.save();
+            ctx.translate(d.x, d.y);
+            ctx.rotate(d.rotation);
+            ctx.fillStyle = d.color;
+            ctx.beginPath();
+            ctx.moveTo(0, -d.size);
+            ctx.lineTo(d.size * 0.5, 0);
+            ctx.lineTo(0, d.size);
+            ctx.lineTo(-d.size * 0.5, 0);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Add new diamonds occasionally
+            if (Math.random() < 0.05) {
+                diamonds.push(createDiamond());
+            }
+            
+            // Update and draw diamonds
+            for (var i = diamonds.length - 1; i >= 0; i--) {
+                var d = diamonds[i];
+                d.y += d.speed;
+                d.rotation += d.rotSpeed;
+                
+                drawDiamond(d);
+                
+                // Remove diamonds that have fallen off screen
+                if (d.y > height + 10) {
+                    diamonds.splice(i, 1);
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Start animation when page loads
+        window.addEventListener('load', function() {
+            width = canvas.offsetWidth || canvas.parentElement.offsetWidth || 300;
+            canvas.width = width;
+            animate();
+        });
+        
+        // Handle resize
+        window.addEventListener('resize', function() {
+            width = canvas.offsetWidth || canvas.parentElement.offsetWidth || 300;
+            canvas.width = width;
+        });
+    })();
+</script>
+</body>
+</html>
